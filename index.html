@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Распаковка и рекомендации — Биржа лидов</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+  /* Layout: sticky left nav (Распаковка + 4 блока задач) + scrollable card list on the right,
+     mirrors the биржа's own kanban-card language in its blue/white brand palette. */
+  :root{
+    --bg:#ffffff; --bg-2:#f8faff; --surface:#ffffff; --surface-2:#f1f5f9;
+    --border:#e2e8f0; --text:#0f172a; --text-2:#475569; --text-3:#94a3b8;
+    --accent:#2563eb; --accent-dark:#1d4ed8; --accent-light:#eff6ff; --accent-mid:#dbeafe;
+    --green:#16a34a; --green-light:#dcfce7;
+    --amber:#b45309; --amber-light:#fef3c7;
+    --shadow:0 4px 24px rgba(37,99,235,0.08); --shadow-lg:0 8px 32px rgba(37,99,235,0.14);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0a1120; --bg-2:#0d1526; --surface:#111d33; --surface-2:#0d1729;
+      --border:#1f2e47; --text:#e7ecf5; --text-2:#9fb0c9; --text-3:#5f7695;
+      --accent:#5b8def; --accent-dark:#7ea6f2; --accent-light:#132342; --accent-mid:#182c50;
+      --green:#4ade80; --green-light:#0f2b1c;
+      --amber:#f0b354; --amber-light:#332309;
+      --shadow:0 4px 24px rgba(0,0,0,0.35); --shadow-lg:0 8px 32px rgba(0,0,0,0.5);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0a1120; --bg-2:#0d1526; --surface:#111d33; --surface-2:#0d1729;
+    --border:#1f2e47; --text:#e7ecf5; --text-2:#9fb0c9; --text-3:#5f7695;
+    --accent:#5b8def; --accent-dark:#7ea6f2; --accent-light:#132342; --accent-mid:#182c50;
+    --green:#4ade80; --green-light:#0f2b1c;
+    --amber:#f0b354; --amber-light:#332309;
+    --shadow:0 4px 24px rgba(0,0,0,0.35); --shadow-lg:0 8px 32px rgba(0,0,0,0.5);
+    color-scheme: dark;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif; padding-inline:20px;}
+  h1,h2,h3{font-family:'Space Grotesk',sans-serif; text-wrap:balance; margin:0;}
+  a{color:var(--accent);}
+  img{max-width:100%;}
+
+  .shell{max-width:1180px; margin:0 auto; display:flex; gap:32px; align-items:flex-start;}
+
+  /* ---------- hero ---------- */
+  .hero{padding-block:32px 20px;}
+  .eyebrow{font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); margin-bottom:10px;}
+  .hero h1{font-size:clamp(28px,4vw,40px); font-weight:700; color:var(--text); margin-bottom:10px;}
+  .hero p{font-size:16px; color:var(--text-2); max-width:640px; line-height:1.6;}
+  .hero-note{display:inline-flex; align-items:center; gap:8px; margin-top:16px; padding:10px 16px; border-radius:10px; background:var(--accent-light); border:1px solid var(--accent-mid); color:var(--accent-dark); font-size:14px; font-weight:600;}
+
+  /* ---------- nav ---------- */
+  nav.side{position:sticky; top:20px; flex:none; width:230px; display:flex; flex-direction:column; gap:2px; padding:16px 0;}
+  nav.side a{display:block; padding:9px 14px; border-radius:9px; font-size:14px; font-weight:600; color:var(--text-2); text-decoration:none; border:1px solid transparent;}
+  nav.side a:hover{background:var(--surface-2);}
+  nav.side a.section-label{font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--text-3); font-weight:700; padding:14px 14px 4px; pointer-events:none;}
+
+  main{flex:1; min-width:0; padding-block:32px 60px;}
+
+  section{margin-bottom:44px; scroll-margin-top:16px;}
+  .section-head{margin-bottom:18px;}
+  .section-head .tag{font-size:12px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:.06em;}
+  .section-head h2{font-size:24px; margin-top:4px;}
+  .section-head p{color:var(--text-2); font-size:15px; margin-top:6px; max-width:620px; line-height:1.55;}
+
+  /* ---------- sheet cards (Распаковка) ---------- */
+  .sheet{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px 22px; margin-bottom:14px; box-shadow:var(--shadow);}
+  .sheet-num{display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:8px; background:var(--accent-light); color:var(--accent-dark); font-size:13px; font-weight:700; margin-right:10px;}
+  .sheet h3{display:inline; font-size:16.5px;}
+  .sheet .action{margin-top:10px; font-size:14.5px; color:var(--text-2); line-height:1.6;}
+  .sheet .action b{color:var(--text); font-weight:600;}
+
+  /* ---------- recommendation cards ---------- */
+  .rec-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media (max-width:760px){ .rec-grid{grid-template-columns:1fr;} }
+  .rec{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px 20px; box-shadow:var(--shadow); display:flex; flex-direction:column; min-width:0;}
+  .rec-top{display:flex; align-items:flex-start; gap:10px; margin-bottom:8px;}
+  .rec-num{flex:none; width:28px; height:28px; border-radius:8px; background:var(--accent); color:#fff; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center;}
+  .rec-title{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15.5px; line-height:1.35; padding-top:3px;}
+  .rec-do{font-size:14px; color:var(--text-2); line-height:1.55;}
+  .rec-do b{color:var(--text); font-weight:600;}
+  .rec-skip{margin-top:8px; font-size:12.5px; color:var(--text-3); font-style:italic;}
+  .pill{display:inline-flex; align-self:flex-start; margin-top:10px; padding:3px 10px; border-radius:99px; font-size:11.5px; font-weight:700;}
+  .pill.self{background:var(--green-light); color:var(--green);}
+  .pill.paid{background:var(--amber-light); color:var(--amber);}
+
+  .callout{background:var(--accent-light); border:1px solid var(--accent-mid); border-radius:12px; padding:16px 18px; font-size:14.5px; color:var(--text); line-height:1.6; margin-bottom:18px;}
+  .callout b{color:var(--accent-dark);}
+
+  .checklist{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px 24px; box-shadow:var(--shadow);}
+  .checklist ol{margin:0; padding-left:20px; display:flex; flex-direction:column; gap:10px;}
+  .checklist li{font-size:15px; color:var(--text-2); line-height:1.55;}
+  .checklist li b{color:var(--text);}
+
+  footer{border-top:1px solid var(--border); padding-block:22px 40px; font-size:13px; color:var(--text-3);}
+
+  @media (max-width:900px){
+    .shell{flex-direction:column; gap:0;}
+    nav.side{position:static; width:100%; flex-direction:row; overflow-x:auto; gap:6px; padding:12px 0; border-bottom:1px solid var(--border); margin-bottom:8px;}
+    nav.side a.section-label{display:none;}
+    nav.side a{white-space:nowrap; padding:7px 12px; font-size:13px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <nav class="side" id="sideNav">
+    <a class="section-label">Разделы</a>
+    <a href="#raspakovka">Распаковка</a>
+    <a href="#blok-a">Материалы</a>
+    <a href="#blok-b">Публикации</a>
+    <a href="#blok-v">Карты и доски</a>
+    <a href="#blok-g">Платные пакеты</a>
+    <a href="#poryadok">Порядок действий</a>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <div class="eyebrow">Личный кабинет · Биржа лидов</div>
+      <h1>Распаковка и рекомендации</h1>
+      <p>Всё, что нужно сделать самостоятельно в своём кабинете, чтобы пошли заявки. Материалы и тексты уже готовы — ваша часть: проверить, опубликовать, отметить готово.</p>
+      <div class="hero-note">✅ Ничего присылать не нужно — выполняете и отмечаете карточку прямо в кабинете</div>
+    </div>
+
+    <section id="raspakovka">
+      <div class="section-head">
+        <div class="tag">Шаг 1</div>
+        <h2>Распаковка</h2>
+        <p>Рабочая тетрадь из 5 листов. Черновик уже заполнен по вашему брифу — читаете и поправляете прямо в таблице, без отдельной переписки.</p>
+      </div>
+
+      <div class="sheet">
+        <h3><span class="sheet-num">1</span>Декомпозиция</h3>
+        <div class="action">Финансовая модель: сколько нужно заявок и продаж на 12 месяцев. <b>Сверьте цены своих услуг с таблицей и поправьте прямо в ячейках</b>, если не совпадает.</div>
+      </div>
+      <div class="sheet">
+        <h3><span class="sheet-num">2</span>Ценностное позиционирование</h3>
+        <div class="action">Портреты клиентов, карта пути (где люди сомневаются), уникальный метод (14 вопросов о вашей работе), 3 кейса До/После. <b>Впишите ответы и кейсы прямо в таблицу</b> — своими словами, без наведения красоты.</div>
+      </div>
+      <div class="sheet">
+        <h3><span class="sheet-num">3</span>Прогрев базы и контент</h3>
+        <div class="action">Цепочка из 10 касаний для своей аудитории. <b>Проверьте темы — если что-то не подходит, замените прямо в таблице.</b></div>
+      </div>
+      <div class="sheet">
+        <h3><span class="sheet-num">4</span>Скрипты</h3>
+        <div class="action">Диагностика, прогрев, точечные рассылки. <b>Перечитайте и подправьте формулировки под свою речь</b> — структуру менять не нужно.</div>
+      </div>
+      <div class="sheet">
+        <h3><span class="sheet-num">5</span>Дорожная карта</h3>
+        <div class="action">Тот же список задач в формате чек-листа со сроками. <b>Отмечайте пункты по мере готовности.</b></div>
+      </div>
+    </section>
+
+    <section id="blok-a">
+      <div class="section-head">
+        <div class="tag">Блок А · 1–9</div>
+        <h2>Материалы и сценарии</h2>
+        <p>Проверяете и дополняете прямо в карточке — публикаций тут ещё нет.</p>
+      </div>
+      <div class="rec-grid">
+        <div class="rec"><div class="rec-top"><div class="rec-num">1</div><div class="rec-title">Декомпозиция: заявки и продажи</div></div><div class="rec-do">Сверьте цифры с реальными ценами. Расхождение — поправьте прямо в карточке.</div></div>
+        <div class="rec"><div class="rec-top"><div class="rec-num">2</div><div class="rec-title">Сегменты ЦА: портреты клиентов</div></div><div class="rec-do">Прочитайте 2–3 портрета, подправьте возраст/боли под своих реальных клиентов.</div></div>
+        <div class="rec"><div class="rec-top"><div class="rec-num">3</div><div class="rec-title">Карта пути клиента</div></div><div class="rec-do">Отметьте, где по вашему опыту люди чаще сомневаются — впишите прямо в карточку.</div></div>
+        <div class="rec"><div class="rec-top"><div class="rec-num">4</div><div class="rec-title">Уникальный метод: 14 вопросов</div></div><div class="rec-do">Ответьте на каждый вопрос своими словами, 2–3 предложения достаточно.</div></div>
+        <div class="rec"><div class="rec-top"><div class="rec-num">5</div><div class="rec-title">Лид-магнит: доделать</div></div><div class="rec-do">Выберите тему из вариантов (или свою), дочитайте черновик и внесите правки прямо в текст.</div></div>
+        <div class="rec"><div class="rec-top"><div class="rec-num">6</div><div class="rec-title">Кейсы До / После</div></div><div class="rec-do">Впишите минимум 3 реальных случая: с чем пришёл клиент → что сделали → результат.</div></div>
+        <div class="rec"><div class="rec-top"><div class="rec-num">7</div><div class="rec-title">Прогрев базы: контент-план</div></div><div class="rec-do">Просмотрите план касаний, замените темы, которые не подходят вашей нише.</div></div>
+        <div class="rec"><div class="rec-top"><div class="rec-num">8</div><div class="rec-title">Скрипты: диагностика, прогрев, рассылки</div></div><div class="rec-do">Перечитайте 3 скрипта, поправьте фразы под свой стиль речи.</div></div>
+        <div class="rec"><div class="rec-top"><div class="rec-num">9</div><div class="rec-title">План переговоров</div></div><div class="rec-do">Прогоните сценарий на одном реальном звонке, поправьте формулировки, если что-то не звучит.</div></div>
+      </div>
+    </section>
+
+    <section id="blok-b">
+      <div class="section-head">
+        <div class="tag">Блок Б · 10–12</div>
+        <h2>Публикации на своих ресурсах</h2>
+        <p>Материалы готовы — снимаете и выкладываете сами. По 1 публикации в день, 5 дней подряд — так работает прогрев, а не разовый вброс.</p>
+      </div>
+      <div class="callout">📅 <b>График:</b> 1 видео/пост/сторис в день, в одно и то же время. Всё сразу за 1–2 дня — не работает как прогрев.</div>
+      <div class="rec-grid">
+        <div class="rec">
+          <div class="rec-top"><div class="rec-num">10</div><div class="rec-title">5 видео</div></div>
+          <div class="rec-do">Снимите на телефон по готовым сценариям (свет — просто лицом к окну). Опубликуйте по графику. Ссылку в конце видео не убирайте.</div>
+          <span class="pill self">Делаете сами</span>
+        </div>
+        <div class="rec">
+          <div class="rec-top"><div class="rec-num">11</div><div class="rec-title">5 постов</div></div>
+          <div class="rec-do">Опубликуйте готовые тексты там, где ваша аудитория. Ссылка на бота в конце поста остаётся обязательно.</div>
+          <span class="pill self">Делаете сами</span>
+        </div>
+        <div class="rec">
+          <div class="rec-top"><div class="rec-num">12</div><div class="rec-title">5 сторис</div></div>
+          <div class="rec-do">Публикуйте по 1 сторис в день на основе готового текста/визуала.</div>
+          <span class="pill self">Делаете сами</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="blok-v">
+      <div class="section-head">
+        <div class="tag">Блок В · 13–19</div>
+        <h2>Карты, доски объявлений, биржи услуг</h2>
+        <p>Разовая настройка — оформили один раз, дальше карточка работает сама.</p>
+      </div>
+      <div class="rec-grid">
+        <div class="rec"><div class="rec-top"><div class="rec-num">13</div><div class="rec-title">Яндекс Карты</div></div><div class="rec-do">Заполните карточку организации по инструкции Яндекса.</div><div class="rec-skip">Нет своего адреса и работаете только онлайн — пропустите этот пункт.</div></div>
+        <div class="rec"><div class="rec-top"><div class="rec-num">14</div><div class="rec-title">2ГИС</div></div><div class="rec-do">Заполните карточку на 2gis.ru.</div><div class="rec-skip">Тоже необязательно без физического адреса.</div></div>
+        <div class="rec"><div class="rec-top"><div class="rec-num">15</div><div class="rec-title">Авито</div></div><div class="rec-do">Разместите объявление по готовому тексту. Нестандартный заголовок — это специально, для контраста в выдаче.</div></div>
+        <div class="rec"><div class="rec-top"><div class="rec-num">16</div><div class="rec-title">ВК (Юла)</div></div><div class="rec-do">Разместите то же объявление, адаптированное под площадку.</div></div>
+        <div class="rec"><div class="rec-top"><div class="rec-num">17</div><div class="rec-title">Юду</div></div><div class="rec-do">Создайте профиль исполнителя по готовому описанию услуг.</div></div>
+        <div class="rec"><div class="rec-top"><div class="rec-num">18</div><div class="rec-title">Яндекс Услуги</div></div><div class="rec-do">Заполните профиль специалиста по готовому описанию.</div></div>
+        <div class="rec"><div class="rec-top"><div class="rec-num">19</div><div class="rec-title">Вакансия на Работа.ру</div></div><div class="rec-do">Разместите, только если ищете себе помощника/подрядчика.</div><div class="rec-skip">Найм не требуется — пропустите.</div></div>
+      </div>
+    </section>
+
+    <section id="blok-g">
+      <div class="section-head">
+        <div class="tag">Блок Г · 20–24</div>
+        <h2>Платные пакеты запуска трафика</h2>
+        <p>Единственный блок, где нужно связаться с менеджером — это оплата и настройка рекламного кабинета, а не правки материалов.</p>
+      </div>
+      <div class="rec-grid">
+        <div class="rec"><div class="rec-top"><div class="rec-num">20</div><div class="rec-title">Пакет: Яндекс.Директ</div></div><div class="rec-do">Напишите менеджеру для расчёта бюджета и запуска.</div><span class="pill paid">Через менеджера</span></div>
+        <div class="rec"><div class="rec-top"><div class="rec-num">21</div><div class="rec-title">Пакет: продвижение на Авито</div></div><div class="rec-do">Платное продвижение объявления сверх бесплатного размещения.</div><span class="pill paid">Через менеджера</span></div>
+        <div class="rec"><div class="rec-top"><div class="rec-num">22</div><div class="rec-title">Пакет: ВК Таргет</div></div><div class="rec-do">Согласуйте бюджет и аудиторию для таргета.</div><span class="pill paid">Через менеджера</span></div>
+        <div class="rec"><div class="rec-top"><div class="rec-num">23</div><div class="rec-title">Пакет SMM</div></div><div class="rec-do">Расширенное ведение соцсетей сверх 5+5+5 на постоянной основе.</div><span class="pill paid">Через менеджера</span></div>
+        <div class="rec"><div class="rec-top"><div class="rec-num">24</div><div class="rec-title">Пакет посевов TG/ВК/MAX</div></div><div class="rec-do">Платное размещение поста в чужих каналах с вашей аудиторией.</div><span class="pill paid">Через менеджера</span></div>
+      </div>
+    </section>
+
+    <section id="poryadok">
+      <div class="section-head">
+        <div class="tag">Итог</div>
+        <h2>Порядок действий</h2>
+      </div>
+      <div class="checklist">
+        <ol>
+          <li><b>Распаковка</b> — открыть, поправить все 5 листов прямо в таблице.</li>
+          <li><b>Блок А</b> — проверить материалы и сценарии, ничего публиковать пока не нужно.</li>
+          <li><b>Блок Б</b> — публиковать по графику: 1 видео/пост/сторис в день.</li>
+          <li><b>Блок В</b> — разово оформить карты/доски/биржи, пропуская то, что не подходит формату работы.</li>
+          <li><b>Блок Г</b> — по желанию, если нужно ускорить поток заявок: написать менеджеру.</li>
+        </ol>
+      </div>
+    </section>
+
+    <footer>Биржа лидов · личный кабинет клиента</footer>
+  </main>
+</div>
+</body>
+</html>
